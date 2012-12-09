@@ -3,7 +3,7 @@ class StateMachine::AuditTrail::Backend < Struct.new(:transition_class)
   autoload :Mongoid,      'state_machine/audit_trail/backend/mongoid'
   autoload :ActiveRecord, 'state_machine/audit_trail/backend/active_record'
 
-  def log(object, event, from, to, timestamp = Time.now)
+  def log(object, event, from, to, timestamp = Time.now, opts)
     raise NotImplemented, "Implement in a subclass."
   end
   

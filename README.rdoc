@@ -37,6 +37,27 @@ If your audit trail model does not use the default naming scheme, provide it usi
       store_audit_trail :to => 'ModelAuditTrail'
       ...
 
+To store the an additional attribute in the log, just provide it using the <tt>:additional_attribute</tt> option.
+
+This adds an admin:references parameter to the migration when the state_machine:audit_trail generator is run (default is 'user'):
+
+  class Model < ActiveRecord::Base
+    state_machine :state, :initial => :start do
+      store_audit_trail :to => 'ModelAuditTrail', :additional_attribute => 'admin' 
+      ...
+
+Then you can track the user who made a state change.
+
+This logs the user as admin_id in the ModelStateTransition table along with the standard attributes:
+
+  @model.stop!(:admin_id => @current_user) 
+
+CAVEAT: AS THIS BRANCH CURRENTLY STANDS, IF YOU DON'T SUPPLY A 'USER' PARAMETER, THE 'user_id' DEFAULT(OR CLIENT SUPPLIED ATTRIBUTE) WILL BE NIL UPON STATE CHANGE.
+
+In order to track options passed from other models or a controller to the state machine audit trail on the creation of a model or at another, you can also send an _audit_trail_opts hash when setting attributes on the owner class of the state machine.
+
+  User.create(_audit_trail_opts: {admin_id: @current_user})
+
 That's it! The plugin will register an <tt>after_transition</tt> callback that is used to log all transitions. It will also log the initial state if there is one.
 
 If you would like to store additional messages in the audit trail, you can do so with the following:

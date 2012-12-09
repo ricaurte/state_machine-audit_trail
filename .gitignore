@@ -6,3 +6,5 @@ pkg/*
 *.rbc
 /doc
 .yardoc
+.idea
+.rvmrc

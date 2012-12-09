@@ -9,10 +9,11 @@ class StateMachine::AuditTrail::Backend::Mongoid < StateMachine::AuditTrail::Bac
   # event:  the event being observed by the state machine
   # from:   the state of the object prior to the event
   # to:     the state of the object after the event
-  def log(object, event, from, to, timestamp = Time.now)
+  def log(object, event, from, to, timestamp = Time.now, opts = {})
     tc = transition_class
     foreign_key_field = tc.relations.keys.first
-    transition_class.create(foreign_key_field => object, :event => event, :from => from, :to => to, :create_at => timestamp)
+    params = {foreign_key_field => object, :event => event, :from => from, :to => to, :create_at => timestamp}.merge(opts || {})
+    transition_class.create(params)
   end
 
 

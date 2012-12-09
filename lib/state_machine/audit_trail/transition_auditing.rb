@@ -13,12 +13,20 @@ module StateMachine::AuditTrail::TransitionAuditing
     state_machine = self
     state_machine.transition_class_name = (options[:to] || default_transition_class_name).to_s
     state_machine.after_transition do |object, transition|
-      state_machine.audit_trail(options[:context_to_log]).log(object, transition.event, transition.from, transition.to)
+      # access audit_opts first from the object, then merge in the passed in arguments, so that both sets of opts can
+      # be used against the state machine
+      audit_opts = object._audit_trail_opts.is_a?(Hash) ? object._audit_trail_opts : {}
+
+      # override the existing options with options for this specific transition
+      audit_opts = audit_opts.merge(!transition.args.empty? ? transition.args.select {|arg| arg.is_a?(Hash)}.first : {})
+
+      state_machine.audit_trail(options[:context_to_log]).log(object, transition.event, transition.from, transition.to, timestamp = Time.now, audit_opts)
     end
 
     state_machine.owner_class.after_create do |object|
       if !object.send(state_machine.attribute).nil?
-        state_machine.audit_trail(options[:context_to_log]).log(object, nil, nil, object.send(state_machine.attribute))
+        audit_opts = object._audit_trail_opts.is_a?(Hash) ? object._audit_trail_opts : {}
+        state_machine.audit_trail(options[:context_to_log]).log(object, nil, nil, object.send(state_machine.attribute), timestamp = Time.now, audit_opts)
       end
     end
   end

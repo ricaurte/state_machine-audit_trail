@@ -6,10 +6,10 @@ class StateMachine::AuditTrail::Backend::ActiveRecord < StateMachine::AuditTrail
     super transition_class
   end
 
-  def log(object, event, from, to, timestamp = Time.now)
+  def log(object, event, from, to, timestamp = Time.now, opts = {})
     # Let ActiveRecord manage the timestamp for us so it does the 
     # right thing with regards to timezones.
-    params = {foreign_key_field(object) => object.id, :event => event, :from => from, :to => to}
+    params = {foreign_key_field(object) => object.id, :event => event, :from => from, :to => to}.merge(opts || {})
     params[self.context_to_log] = object.send(self.context_to_log) unless self.context_to_log.nil?
     transition_class.create(params)
   end
